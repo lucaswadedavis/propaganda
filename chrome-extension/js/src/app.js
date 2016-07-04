@@ -17,14 +17,14 @@ app.c.init=function(){
     'windowId': chrome.windows.WINDOW_ID_CURRENT},function (tabs) {
      app.m.tabURL = tabs[0].url;
  
-    chrome.storage.local.get(null,function(obj){
-      if (!obj.sites){
-        obj.sites = [];
+    chrome.storage.local.get(null,function(storage){
+      if (!storage.sites){
+        storage.sites = [];
         chrome.storage.local.set({"sites":[]},function(){
           console.log("initial sites set");
         });
       }
-      app.v.init(obj);
+      app.v.init(storage);
       app.v.listeners();
     });
    
@@ -33,10 +33,10 @@ app.c.init=function(){
 
   setInterval(function () {
     
-    chrome.storage.local.get(null, function (obj) {
+    chrome.storage.local.get(null, function (storage) {
       var score = 0;
-      for (var i = 0; i < obj.sites.length; i++) {
-        score += obj.sites[i].secondsActiveToday * parseInt(obj.sites[i].pointValue, 10) || 0;
+      for (var i = 0; i < storage.sites.length; i++) {
+        score += Math.floor(storage.sites[i].secondsActiveToday / 60) * parseInt(storage.sites[i].pointValue, 10) || 0;
       }
       console.log('score', score);
       $('.score').text(score);
@@ -107,6 +107,10 @@ app.v.listeners=function(){
           if (s[i].url === storage.sites[j].url) {
             matchFound = true;
             console.log('match found');
+            if (s[i].pointValue !== storage.sites[j].pointValue) {
+              console.log('point value updated');
+              storage.sites[j].pointValue = s[i].pointValue;
+            }
           }
 
         }
