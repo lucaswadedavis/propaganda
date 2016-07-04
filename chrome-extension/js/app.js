@@ -53,6 +53,14 @@ app.c.getDataForURL = function (storage, url) {
   return null;
 };
 
+app.c.Site = function (url, pointValue) {
+  return {
+    url: url,
+    replacement: pointValue,
+    secondsActiveToday: 1
+  };
+};
+
 //////////////////////////////
 
 app.v.init=function(state){
@@ -76,7 +84,7 @@ app.v.listeners=function(){
 
       console.log(url, replacement);
       if (url && replacement){
-        s.push({url:url,replacement:replacement});
+        s.push(app.c.Site(url, replacement));
       } 
 
     
@@ -87,11 +95,12 @@ app.v.listeners=function(){
     chrome.storage.local.get(null, function (storage) {
       console.log('storage', storage);
       console.log('s', s); 
-      
+     
+      // add the new entries to memory
       for (var i = 0; i < s.length; i++) {
         var matchFound = false;
 
-        for (var j = 0; i < storage.replacements.length; j++) {
+        for (var j = 0; j < storage.replacements.length; j++) {
           if (s[i].url === storage.replacements[j].url) {
             matchFound = true;
             console.log('match found');
@@ -102,6 +111,21 @@ app.v.listeners=function(){
         if (matchFound === false) {
           console.log('no match found, adding data');
           storage.replacements.push(s[i]);
+        }
+      }
+
+      // and remove things in memory not represented in the view
+      for (var i = 0; i < storage.replacements.length; i++) {
+        var matchFound = false;
+        for (var j = 0; j < s.length; j++) {
+          if (s[j].url === storage.replacements[i].url) {
+            matchFound = true;
+          }
+        }
+        if (matchFound === false) {
+          console.log('no match found, removing data');
+          storage.replacements.splice(i, 1);
+          i--;
         }
       }
 
