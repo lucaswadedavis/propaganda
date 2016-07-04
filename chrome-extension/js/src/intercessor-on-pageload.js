@@ -1,10 +1,10 @@
 (function () {
 
-  var url = window.location;
+  var url = window.location.host;
     
   getDataForURL = function (storage, url) {
     for (var i = 0; i < storage.length; i++) {
-      if (storage[i].url === url) {
+      if (storage[i].url.includes(url) || url.includes(storage[i].url)) {
         return storage[i];
       }
     }
@@ -22,12 +22,16 @@
     var urlData = getDataForURL(obj.sites, url);
 
     if (urlData) {
+      console.log(urlData);
       if (urlData.secondsActiveToday) {
         urlData.secondsActiveToday++;
       } else {
         urlData.secondsActiveToday = 1;
       }
+      
+      console.log('--- initial', obj);
       chrome.storage.local.set(obj, function () {});
+      
     }
   });
 
@@ -35,14 +39,16 @@
   setInterval(function () {
   
     chrome.storage.local.get(null, function(obj) {
+      console.log(obj, url);
       var urlData = getDataForURL(obj.sites, url);
-      console.log('pageload', obj);
       if (urlData) {
         if (urlData.secondsActiveToday) {
           urlData.secondsActiveToday++;
         } else {
           urlData.secondsActiveToday = 1;
         }
+      
+        console.log(obj);
         chrome.storage.local.set(obj, function () {});
       }
     });

@@ -7,7 +7,6 @@ var app={m:{},v:{},c:{},t:{}};
 
 /////////////////////////////
 
-app.m.secondsActive = 0;
 
 /////////////////////////////
 
@@ -31,14 +30,18 @@ app.c.init=function(){
    
   });
 
+
   setInterval(function () {
+    
     chrome.storage.local.get(null, function (obj) {
-      var urlData = app.c.getDataForURL(obj, app.m.tabURL);
-      console.log(obj);
-      if (urlData) {
-        $('.seconds-active').text(urlData.secondsActiveToday);
+      var score = 0;
+      for (var i = 0; i < obj.sites.length; i++) {
+        score += obj.sites[i].secondsActiveToday * parseInt(obj.sites[i].pointValue, 10) || 0;
       }
+      console.log('score', score);
+      $('.score').text(score);
     });
+
   }, 1000);
 
 };
@@ -56,7 +59,7 @@ app.c.getDataForURL = function (storage, url) {
 app.c.Site = function (url, pointValue) {
   return {
     url: url,
-    replacement: pointValue,
+    pointValue: pointValue,
     secondsActiveToday: 1
   };
 };
@@ -70,7 +73,7 @@ app.v.init=function(state){
 
 app.v.listeners=function(){ 
   $("body").on("click","#add-another",function(){
-    $("#sites").append(app.t.replacement() );
+    $("#sites").append(app.t.inputArea() );
   });
 
   $("body").on("click","#save",function(){
@@ -79,12 +82,12 @@ app.v.listeners=function(){
     
     $("#sites div").each(function(){
       var url =  $(this).children()[0].value;
-      var replacement = $(this).children()[1].value;
+      var pointValue = $(this).children()[1].value;
   
 
-      console.log(url, replacement);
-      if (url && replacement){
-        s.push(app.c.Site(url, replacement));
+      console.log(url, pointValue);
+      if (url && pointValue){
+        s.push(app.c.Site(url, pointValue));
       } 
 
     
@@ -148,7 +151,7 @@ app.v.listeners=function(){
 app.t.splash=function(state){
   var d="";
   d+="<img src='icon.png' alt='counterspell icon' />";
-  d += "<h2 class='seconds-active'>" + app.m.secondsActive + "</h2>";
+  d += "<h2 class='score'>---</h2>";
   d+="<div class='wrapper'>";
     d+=app.t.sites(state.sites );
   d+="<input type='button' value='Save' id='save'></input>";
@@ -160,19 +163,21 @@ app.t.sites = function(sites){
   var d = "";
   d += "<div class='thin-wrapper' id='sites'>";
     for (var i=0;i<sites.length;i++){
-      d += app.t.replacement(sites[i]);
+      d += app.t.inputArea(sites[i]);
     }
   d += "</div>";
   d += "<input type='button' value='add another' id='add-another'></input>";
   return d;
 };
 
-app.t.replacement = function(replacement){
-  if (replacement === undefined){replacement = {url:"",replacement:""};}
+app.t.inputArea = function(data){
+  if (data === undefined){
+    data = {url:"", pointValue:""};
+  }
   var d = "";
-  d += "<div class='replacement thin-wrapper'>";
-    d += "<input type='text' value='"+replacement.url+"' placeholder='url'></input>";
-    d += "<input type='text' value='"+replacement.replacement+"' placeholder='points'></input>";
+  d += "<div class='pointValue thin-wrapper'>";
+    d += "<input type='text' value='"+data.url+"' placeholder='url'></input>";
+    d += "<input type='text' value='"+data.pointValue+"' placeholder='points'></input>";
   d += "</div>";
   return d;
 };
