@@ -7,6 +7,7 @@ var app={m:{},v:{},c:{},t:{}};
 
 /////////////////////////////
 
+app.m.currentURLIsPresentInCollection = false;
 
 /////////////////////////////
 
@@ -24,8 +25,27 @@ app.c.init=function(){
           console.log("initial sites set");
         });
       }
+      
+    chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+      var url = tabs[0].url;
+      var matchFound = false;
+      for (var i = 0; i < storage.sites.length; i++) {
+        if (url.includes(storage.sites[i].url) || storage.sites[i].url.includes(url)) {
+          matchFound = true;
+        }
+      }
+      if (matchFound) {
+        app.m.currentURLIsPresentInCollection = true; 
+      } else {
+        app.m.currentURLIsPresentInCollection = false;
+        storage.sites.unshift(app.c.Site(url, -1));
+      }
       app.v.init(storage);
       app.v.listeners();
+
+    });  
+      
+      
     });
    
   });
@@ -73,7 +93,7 @@ app.v.init=function(state){
 
 app.v.listeners=function(){ 
   $("body").on("click","#add-another",function(){
-    $("#sites").append(app.t.inputArea() );
+    $("#sites").append(app.t.inputAreaForUnsavedURLs() );
   });
 
   $("body").on("click","#save",function(){
@@ -139,6 +159,7 @@ app.v.listeners=function(){
       console.log('new storage', storage);
 
       chrome.storage.local.set(storage, function () {});
+      $('div').removeClass('unsaved-url');
     });
  
 
@@ -167,10 +188,26 @@ app.t.sites = function(sites){
   var d = "";
   d += "<div class='thin-wrapper' id='sites'>";
     for (var i=0;i<sites.length;i++){
-      d += app.t.inputArea(sites[i]);
+      if (!app.m.currentURLIsPresentInCollection && i === 0) {
+        d += app.t.inputAreaForUnsavedURLs(sites[i]);
+      } else {  
+        d += app.t.inputArea(sites[i]);
+      }
     }
   d += "</div>";
   d += "<input type='button' value='add another' id='add-another'></input>";
+  return d;
+};
+
+app.t.inputAreaForUnsavedURLs = function(data){
+  if (data === undefined){
+    data = {url:"", pointValue:""};
+  }
+  var d = "";
+  d += "<div class='pointValue thin-wrapper unsaved-url'>";
+    d += "<input type='text' value='"+data.url+"' placeholder='url'></input>";
+    d += "<input type='text' value='"+data.pointValue+"' placeholder='points'></input>";
+  d += "</div>";
   return d;
 };
 
