@@ -19,10 +19,10 @@ app.c.init=function(){
      app.m.tabURL = tabs[0].url;
  
     chrome.storage.local.get(null,function(obj){
-      if (!obj.replacements){
-        obj.replacements = [];
-        chrome.storage.local.set({"replacements":[]},function(){
-          console.log("initial replacements set");
+      if (!obj.sites){
+        obj.sites = [];
+        chrome.storage.local.set({"sites":[]},function(){
+          console.log("initial sites set");
         });
       }
       app.v.init(obj);
@@ -70,14 +70,14 @@ app.v.init=function(state){
 
 app.v.listeners=function(){ 
   $("body").on("click","#add-another",function(){
-    $("#replacements").append(app.t.replacement() );
+    $("#sites").append(app.t.replacement() );
   });
 
   $("body").on("click","#save",function(){
 
     var s = [];
     
-    $("#replacements div").each(function(){
+    $("#sites div").each(function(){
       var url =  $(this).children()[0].value;
       var replacement = $(this).children()[1].value;
   
@@ -100,8 +100,8 @@ app.v.listeners=function(){
       for (var i = 0; i < s.length; i++) {
         var matchFound = false;
 
-        for (var j = 0; j < storage.replacements.length; j++) {
-          if (s[i].url === storage.replacements[j].url) {
+        for (var j = 0; j < storage.sites.length; j++) {
+          if (s[i].url === storage.sites[j].url) {
             matchFound = true;
             console.log('match found');
           }
@@ -110,21 +110,21 @@ app.v.listeners=function(){
 
         if (matchFound === false) {
           console.log('no match found, adding data');
-          storage.replacements.push(s[i]);
+          storage.sites.push(s[i]);
         }
       }
 
       // and remove things in memory not represented in the view
-      for (var i = 0; i < storage.replacements.length; i++) {
+      for (var i = 0; i < storage.sites.length; i++) {
         var matchFound = false;
         for (var j = 0; j < s.length; j++) {
-          if (s[j].url === storage.replacements[i].url) {
+          if (s[j].url === storage.sites[i].url) {
             matchFound = true;
           }
         }
         if (matchFound === false) {
           console.log('no match found, removing data');
-          storage.replacements.splice(i, 1);
+          storage.sites.splice(i, 1);
           i--;
         }
       }
@@ -136,7 +136,7 @@ app.v.listeners=function(){
  
 
     /*
-    chrome.storage.local.set({replacements:s},function(){console.log("saved!");});
+    chrome.storage.local.set({sites:s},function(){console.log("saved!");});
    */
   
   
@@ -150,17 +150,17 @@ app.t.splash=function(state){
   d+="<img src='icon.png' alt='counterspell icon' />";
   d += "<h2 class='seconds-active'>" + app.m.secondsActive + "</h2>";
   d+="<div class='wrapper'>";
-    d+=app.t.replacements(state.replacements );
+    d+=app.t.sites(state.sites );
   d+="<input type='button' value='Save' id='save'></input>";
   d+="</div>";    
   return d;
 };
 
-app.t.replacements = function(replacements){
+app.t.sites = function(sites){
   var d = "";
-  d += "<div class='thin-wrapper' id='replacements'>";
-    for (var i=0;i<replacements.length;i++){
-      d += app.t.replacement(replacements[i]);
+  d += "<div class='thin-wrapper' id='sites'>";
+    for (var i=0;i<sites.length;i++){
+      d += app.t.replacement(sites[i]);
     }
   d += "</div>";
   d += "<input type='button' value='add another' id='add-another'></input>";

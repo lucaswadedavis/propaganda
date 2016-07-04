@@ -14,12 +14,12 @@
 
   
   chrome.storage.local.get(null,function(obj){
-    if (!obj.replacements){
-      obj.replacements = [];
+    if (!obj.sites){
+      obj.sites = [];
       chrome.storage.local.set(obj,function(){});
     }
  
-    var urlData = getDataForURL(obj.replacements, url);
+    var urlData = getDataForURL(obj.sites, url);
 
     if (urlData) {
       if (urlData.secondsActiveToday) {
@@ -35,7 +35,7 @@
   setInterval(function () {
   
     chrome.storage.local.get(null, function(obj) {
-      var urlData = getDataForURL(obj.replacements, url);
+      var urlData = getDataForURL(obj.sites, url);
       console.log('pageload', obj);
       if (urlData) {
         if (urlData.secondsActiveToday) {

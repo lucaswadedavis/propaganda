@@ -18,7 +18,7 @@
     [
     {
       "matches": ["*://*/*"],
-      "js": ["js/simple-storage.js","js/intercessor-on-pageload.js"],
+      "js": ["js/lib/simple-storage.js","js/src/intercessor-on-pageload.js"],
       "run_at": "document_end"
     }
   ]
